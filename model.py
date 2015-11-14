@@ -26,7 +26,7 @@ class NNModel(object):
     def predict(self, image_path, rank=10):
         x = chainer.Variable(self.load_image(image_path), volatile=True)
         y = self._predict_class(x)
-        result = zip(y.data[0], self.categories)
+        result = zip(y.data.reshape((y.data.size,)), self.categories)
         return sorted(result, reverse=True)
 
     def load_image(self, image_path):
@@ -64,13 +64,47 @@ class GoogleNetModel(NNModel):
 
     def _mean_image(self):
         mean_image = np.ndarray((3, 224, 224), dtype=np.float32)
-        mean_image[0] = 104
-        mean_image[1] = 117
-        mean_image[2] = 123
+        mean_image[0] = 103.939
+        mean_image[1] = 116.779
+        mean_image[2] = 123.68
         return mean_image
 
     def _predict_class(self, x):
-        y, = self.func(inputs={'data': x}, outputs=['loss3/classifier'],
-                  disable=['loss1/ave_pool', 'loss2/ave_pool'],
-                  train=False)
+        y, = self.func(inputs={'data': x}, outputs=['loss3/classifier'], train=False)
+        return F.softmax(y)
+
+class VGG19(NNModel):
+    def __init__(self):
+        NNModel.__init__(self)
+
+    def _image_shape(self):
+        return (224, 224)
+
+    def _mean_image(self):
+        mean_image = np.ndarray((3, 224, 224), dtype=np.float32)
+        mean_image[0] = 103.939
+        mean_image[1] = 116.779
+        mean_image[2] = 123.68
+        return mean_image
+
+    def _predict_class(self, x):
+        y, = self.func(inputs={'data': x}, outputs=['fc8'], train=False)
+        return F.softmax(y)
+
+class NIN(NNModel):
+    def __init__(self):
+        NNModel.__init__(self)
+
+    def _image_shape(self):
+        return (224, 224)
+
+    def _mean_image(self):
+        mean_image = np.ndarray((3, 224, 224), dtype=np.float32)
+        mean_image[0] = 103.939
+        mean_image[1] = 116.779
+        mean_image[2] = 123.68
+        return mean_image
+
+    def _predict_class(self, x):
+        y, = self.func(inputs={'data': x}, outputs=['pool4'], train=False)
         return F.softmax(y)
