@@ -54,8 +54,7 @@ class NNModel(object):
     def _predict_class(x):
         raise "not implemented"
 
-
-class GoogleNetModel(NNModel):
+class GoogleNet(NNModel):
     def __init__(self):
         NNModel.__init__(self)
 
@@ -70,7 +69,7 @@ class GoogleNetModel(NNModel):
         return mean_image
 
     def _predict_class(self, x):
-        y, = self.func(inputs={'data': x}, outputs=['loss3/classifier'], train=False)
+        y, = self.func(inputs={'data': x}, outputs=['loss3/classifier'], disable=['loss1/ave_pool', 'loss2/ave_pool'], train=False)
         return F.softmax(y)
 
 class VGG19(NNModel):
