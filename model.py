@@ -1,4 +1,4 @@
-import cv2
+from PIL import Image
 import numpy as np
 import chainer
 from chainer import cuda
@@ -21,7 +21,7 @@ class NNModel(object):
     def print_prediction(self, image_path, rank=10):
         prediction = self.predict(image_path, rank)
         for i, (score, label) in enumerate(prediction[:rank]):
-            print "{:>3d} {:>6.2f}% {}".format(i + 1, score * 100, label)
+            print '{:>3d} {:>6.2f}% {}'.format(i + 1, score * 100, label)
 
     def predict(self, image_path, rank=10):
         x = chainer.Variable(self.load_image(image_path), volatile=True)
@@ -30,29 +30,28 @@ class NNModel(object):
         return sorted(result, reverse=True)
 
     def load_image(self, image_path):
-        image = cv2.imread(image_path)
+        image = Image.open(image_path).convert('RGB')
         image_w, image_h = self.image_shape
-        w, h, _ = image.shape
+        w, h = image.size
         if w > h:
             shape = (image_w * w / h, image_h)
         else:
             shape = (image_w, image_h * h / w)
-        image = cv2.resize(image, shape)
-        offset_x = (self.image_shape[0] - image_w) / 2
-        offset_y = (self.image_shape[1] - image_h) / 2
-        image = image[offset_x:offset_x + image_w, offset_y:offset_y + image_h]
-        image = image.transpose(2,0,1).astype(np.float32)
-        image -= self.mean_image
-        return image.reshape((1,) + image.shape)
+        x = (shape[0] - image_w) / 2
+        y = (shape[1] - image_h) / 2
+        pixels = np.asarray(image.resize(shape).crop((x, y, x + image_w, y + image_h))).astype(np.float32)
+        pixels = pixels[:,:,::-1].transpose(2,0,1)
+        pixels -= self.mean_image
+        return pixels.reshape((1,) + pixels.shape)
 
     def _image_shape(self):
-        raise "not implemented"
+        raise NotImplementedError
 
     def _mean_image(self):
-        raise "not implemented"
+        raise NotImplementedError
 
     def _predict_class(x):
-        raise "not implemented"
+        raise NotImplementedError
 
 class GoogleNet(NNModel):
     def __init__(self):

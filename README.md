@@ -3,7 +3,7 @@
 ## Requirement
 
 * [Chainer](http://chainer.org/)
-* [OpenCV](http://opencv.org/)
+* [Pillow](https://pillow.readthedocs.org/en/3.0.x/)
 * Caffe Model  
   Download *.caffemodel from:
     * [VGG_ILSVRC_19_layers](https://gist.github.com/ksimonyan/3785162f95cd2d5fee77)
