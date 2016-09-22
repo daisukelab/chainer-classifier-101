@@ -1,4 +1,4 @@
-from model import GoogleNet
+from level0_model import GoogleNet
 
 m = GoogleNet()
 m.load("bvlc_googlenet.caffemodel")
